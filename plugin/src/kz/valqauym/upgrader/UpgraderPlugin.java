@@ -49,13 +49,24 @@ public final class UpgraderPlugin extends JavaPlugin implements Listener {
         recipeKey = new NamespacedKey(this, "upgrader");
         loadAll();
         getServer().getPluginManager().registerEvents(this, this);
-        ShapedRecipe r = new ShapedRecipe(recipeKey, upgraderItem());
-        r.shape("GDG", "DAD", "GDG");
-        r.setIngredient('G', Material.GOLD_INGOT);
-        r.setIngredient('D', Material.DIAMOND);
-        r.setIngredient('A', Material.ANVIL);
-        Bukkit.addRecipe(r);
+        registerRecipe();
+    }
+
+    /** Adds the crafting recipe (again). /minecraft:reload wipes plugin recipes, so this also runs after every reload. */
+    void registerRecipe() {
+        if (Bukkit.getRecipe(recipeKey) == null) {
+            ShapedRecipe r = new ShapedRecipe(recipeKey, upgraderItem());
+            r.shape("GDG", "DAD", "GDG");
+            r.setIngredient('G', Material.GOLD_INGOT);
+            r.setIngredient('D', Material.DIAMOND);
+            r.setIngredient('A', Material.ANVIL);
+            Bukkit.addRecipe(r, true);
+        }
         for (Player p : Bukkit.getOnlinePlayers()) p.discoverRecipe(recipeKey);
+    }
+
+    @EventHandler public void onDataReload(io.papermc.paper.event.server.ServerResourcesReloadedEvent e) {
+        Bukkit.getScheduler().runTask(this, this::registerRecipe);
     }
 
     @Override public void onDisable() {
@@ -257,7 +268,7 @@ public final class UpgraderPlugin extends JavaPlugin implements Listener {
                 sender.sendMessage(Component.text("Выдан апгрейдер: " + t.getName(), NamedTextColor.GREEN));
             }
             case "open" -> { if (sender instanceof Player p) openFor(p); }
-            case "reload" -> { loadAll(); sender.sendMessage(Component.text("Перезагружено. Предметов: " + values.targets().size(), NamedTextColor.GREEN)); }
+            case "reload" -> { loadAll(); registerRecipe(); sender.sendMessage(Component.text("Перезагружено. Предметов: " + values.targets().size(), NamedTextColor.GREEN)); }
             case "value" -> {
                 if (sender instanceof Player p) {
                     ItemStack h = p.getInventory().getItemInMainHand();
