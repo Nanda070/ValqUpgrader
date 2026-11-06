@@ -167,10 +167,12 @@ public final class UpgraderPlugin extends JavaPlugin implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGH) public void onInteract(PlayerInteractEvent e) {
-        if (e.getHand() != EquipmentSlot.HAND) return;
         if (e.getAction() != Action.RIGHT_CLICK_AIR && e.getAction() != Action.RIGHT_CLICK_BLOCK) return;
         if (!isUpgraderItem(e.getItem())) return;
+        // The item is a knowledge book: vanilla would consume it on use. Block that from either hand.
         e.setCancelled(true);
+        e.setUseItemInHand(org.bukkit.event.Event.Result.DENY);
+        if (e.getHand() == EquipmentSlot.OFF_HAND && isUpgraderItem(e.getPlayer().getInventory().getItemInMainHand())) return;
         openFor(e.getPlayer());
     }
 
