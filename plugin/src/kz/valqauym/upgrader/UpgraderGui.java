@@ -66,7 +66,7 @@ public final class UpgraderGui implements InventoryHolder {
     double chance() {
         double w = wagerValue(), t = targetValue();
         if (w <= 0 || t <= 0) return -1;
-        return plugin.chance(w, t);
+        return plugin.chance(w, t, target);
     }
 
     // ------------------------------------------------------------------ render

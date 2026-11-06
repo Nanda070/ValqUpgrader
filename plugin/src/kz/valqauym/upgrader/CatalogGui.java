@@ -51,10 +51,10 @@ public final class CatalogGui implements InventoryHolder {
             int a = 1;
             if (filter > 0 && w > 0) {
                 a = (int) Math.max(1, Math.min(max, Math.round((1 - plugin.houseEdge()) * w / filter / v)));
-                double c = plugin.chance(w, v * a);
+                double c = plugin.chance(w, v * a, m);
                 if (Math.abs(c - filter) > Math.max(0.05, filter * 0.2)) continue;
             }
-            double c = w > 0 ? plugin.chance(w, v * a) : -1;
+            double c = w > 0 ? plugin.chance(w, v * a, m) : -1;
             list.add(new Entry(m, a, c));
         }
         if (filter > 0) list.sort((x, y) -> Double.compare(Math.abs(x.chance - filter), Math.abs(y.chance - filter)));

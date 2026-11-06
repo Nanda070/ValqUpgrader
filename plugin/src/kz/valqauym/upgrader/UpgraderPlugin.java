@@ -111,6 +111,43 @@ public final class UpgraderPlugin extends JavaPlugin implements Listener {
         return Math.max(getConfig().getDouble("min-chance", 0.001), Math.min(getConfig().getDouble("max-chance", 0.9), c));
     }
 
+    /** Chance for a specific target item: the normal chance, limited by any active entry of chance-caps. */
+    double chance(double wager, double target, Material item) {
+        return Math.min(chance(wager, target), capFor(item));
+    }
+
+    private final Map<String, java.util.regex.Pattern> globCache = new HashMap<>();
+
+    /**
+     * chance-caps in config.yml: a list of {items: [globs], max-chance: 0.02, until: ISO date-time}.
+     * Lets a server keep items from dimensions that are still closed (Nether, End) rare until they open.
+     */
+    double capFor(Material item) {
+        double cap = 1.0;
+        String key = item.getKey().getKey();
+        java.time.ZonedDateTime now = java.time.ZonedDateTime.now();
+        for (Map<?, ?> m : getConfig().getMapList("chance-caps")) {
+            Object until = m.get("until");
+            if (until != null) {
+                try { if (now.isAfter(java.time.ZonedDateTime.parse(String.valueOf(until)))) continue; }
+                catch (Exception e) { continue; }
+            }
+            Object items = m.get("items");
+            if (!(items instanceof List<?> list)) continue;
+            boolean hit = false;
+            for (Object g : list) {
+                String glob = String.valueOf(g).toLowerCase(Locale.ROOT);
+                java.util.regex.Pattern pt = globCache.computeIfAbsent(glob,
+                        s -> java.util.regex.Pattern.compile(java.util.regex.Pattern.quote(s).replace("*", "\\E.*\\Q")));
+                if (pt.matcher(key).matches()) { hit = true; break; }
+            }
+            if (!hit) continue;
+            Object mc = m.get("max-chance");
+            if (mc instanceof Number n) cap = Math.min(cap, n.doubleValue());
+        }
+        return cap;
+    }
+
     boolean matches(Material m, String q) {
         if (m.getKey().getKey().replace('_', ' ').contains(q) || m.getKey().getKey().contains(q)) return true;
         String ru = ruNames.get(m.translationKey());
@@ -270,7 +307,7 @@ public final class UpgraderPlugin extends JavaPlugin implements Listener {
                 sender.sendMessage(Component.text("Выдан апгрейдер: " + t.getName(), NamedTextColor.GREEN));
             }
             case "open" -> { if (sender instanceof Player p) openFor(p); }
-            case "reload" -> { loadAll(); registerRecipe(); sender.sendMessage(Component.text("Перезагружено. Предметов: " + values.targets().size(), NamedTextColor.GREEN)); }
+            case "reload" -> { loadAll(); globCache.clear(); registerRecipe(); sender.sendMessage(Component.text("Перезагружено. Предметов: " + values.targets().size(), NamedTextColor.GREEN)); }
             case "value" -> {
                 if (sender instanceof Player p) {
                     ItemStack h = p.getInventory().getItemInMainHand();

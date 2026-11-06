@@ -1,5 +1,5 @@
 name: ValqUpgrader
-version: 1.0.2
+version: 1.1.0
 main: kz.valqauym.upgrader.UpgraderPlugin
 api-version: "1.21"
 description: Item upgrader wheel for VALQAUYM
