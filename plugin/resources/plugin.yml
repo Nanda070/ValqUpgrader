@@ -1,0 +1,12 @@
+name: ValqUpgrader
+version: 1.0.0
+main: kz.valqauym.upgrader.UpgraderPlugin
+api-version: "1.21"
+description: Item upgrader wheel for VALQAUYM
+commands:
+  upgrader:
+    description: Upgrader info and admin commands
+    usage: /upgrader [give|open|reload|value]
+permissions:
+  upgrader.admin:
+    default: op
