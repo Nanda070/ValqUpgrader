@@ -98,7 +98,7 @@ public final class UpgraderGui implements InventoryHolder {
 
         double ch = chance();
         for (int s : SPIN) inv.setItem(s, button("Прокрутить", NamedTextColor.GOLD,
-                ch < 0 ? "Поставь предмет и выбери цель" : "Шанс: " + pct(ch)));
+                ch < 0 ? "Поставь предмет и выбери цель" : ch == 0 ? "Ставка слишком мала для этой цели" : "Шанс: " + pct(ch)));
         String[] names = {"x2", "x4", "x8", "~30%", "~50%", "~70%"};
         for (int i = 0; i < PRESETS.length; i++) {
             String desc = PRESET_MULT[i] > 0 ? "Цель в " + (int) PRESET_MULT[i] + " раза дороже ставки"
@@ -222,6 +222,11 @@ public final class UpgraderGui implements InventoryHolder {
         double ch = chance();
         if (ch < 0) {
             player.sendActionBar(Component.text("Поставь предмет и выбери цель", NamedTextColor.RED));
+            player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 0.6f, 1.2f);
+            return;
+        }
+        if (ch == 0) {
+            player.sendActionBar(Component.text("Ставка слишком мала: шанс ниже минимального. Уменьши цель или добавь ставку.", NamedTextColor.RED));
             player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 0.6f, 1.2f);
             return;
         }

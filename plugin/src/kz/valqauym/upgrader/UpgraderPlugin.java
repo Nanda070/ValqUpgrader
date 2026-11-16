@@ -108,7 +108,9 @@ public final class UpgraderPlugin extends JavaPlugin implements Listener {
 
     double chance(double wager, double target) {
         double c = (1 - houseEdge()) * wager / target;
-        return Math.max(getConfig().getDouble("min-chance", 0.001), Math.min(getConfig().getDouble("max-chance", 0.9), c));
+        // below min-chance the spin is not allowed at all (0 = "stake too small"); no free floor anymore
+        if (c < getConfig().getDouble("min-chance", 0.001)) return 0;
+        return Math.min(getConfig().getDouble("max-chance", 0.9), c);
     }
 
     /** Chance for a specific target item: the normal chance, limited by any active entry of chance-caps. */
